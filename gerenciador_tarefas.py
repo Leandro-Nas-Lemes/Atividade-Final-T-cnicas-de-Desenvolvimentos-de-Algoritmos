@@ -31,7 +31,7 @@ def inicializar_arquivos():
     Parâmetros: nenhum
     Retorno: nenhum
     """
-    print("Executando a função inicializar_arquivos")
+   print ("Executando a função inicializar_arquivos")
     global tarefas, next_id
     # Criar arquivos se não existirem
     for nome in (ARQUIVO_TAREFAS, ARQUIVO_TAREFAS_ARQUIVADAS):
@@ -58,7 +58,7 @@ def salvar_tarefas():
     """
     Salva a lista global de tarefas no arquivo tarefas.json.
     Parâmetros: nenhum
-    Retorno: nenhum
+    retorno: nenhum
     """
     print("Executando a função salvar_tarefas")
     with open(ARQUIVO_TAREFAS, "w", encoding="utf-8") as f:
