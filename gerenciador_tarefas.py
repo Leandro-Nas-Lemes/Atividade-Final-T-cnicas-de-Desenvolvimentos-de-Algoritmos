@@ -15,9 +15,6 @@ import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 
-# =========================
-# Declaração de variáveis globais
-# =========================
 tarefas: List[Dict] = []
 ARQUIVO_TAREFAS = "tarefas.json"
 ARQUIVO_TAREFAS_ARQUIVADAS = "tarefas_arquivadas.json"
@@ -27,9 +24,6 @@ PRIORIDADES = ["Urgente", "Alta", "Média", "Baixa"]
 STATUS_VALIDOS = ["Pendente", "Fazendo", "Concluída", "Arquivado", "Excluída"]
 ORIGENS = ["E-mail", "Telefone", "Chamado do Sistema"]
 
-# =========================
-# Funções de persistência e inicialização
-# =========================
 def inicializar_arquivos():
     """
     Garante que os arquivos JSON existam; se não, cria com lista vazia.
@@ -45,14 +39,12 @@ def inicializar_arquivos():
             with open(nome, "w", encoding="utf-8") as f:
                 json.dump([], f, ensure_ascii=False, indent=2)
 
-    # Carregar tarefas
     with open(ARQUIVO_TAREFAS, "r", encoding="utf-8") as f:
         try:
             tarefas = json.load(f)
         except json.JSONDecodeError:
             tarefas = []
-
-    # Ajustar next_id com base no maior id existente
+            
     max_id = 0
     for t in tarefas:
         try:
@@ -94,9 +86,6 @@ def anexar_arquivo_arquivadas(tarefa: Dict):
         with open(ARQUIVO_TAREFAS_ARQUIVADAS, "w", encoding="utf-8") as f:
             json.dump([tarefa], f, ensure_ascii=False, indent=2, default=str)
 
-# =========================
-# Funções utilitárias e validação
-# =========================
 def validar_prioridade(prio: str) -> bool:
     """
     Valida se a prioridade informada está entre as permitidas.
@@ -130,9 +119,6 @@ def input_com_tratamento(prompt: str) -> str:
     """
     return input(prompt).strip()
 
-# =========================
-# Operações principais (cada uma em função)
-# =========================
 def criar_tarefa():
     """
     Cria uma nova tarefa solicitando informações ao usuário,
@@ -161,7 +147,7 @@ def criar_tarefa():
     while not validar_origem(origem):
         print("Origem inválida. Escolha entre:", ", ".join(ORIGENS))
         origem = input_com_tratamento("Origem da Tarefa (obrigatório): ")
-    # padronizar
+
     origem = next(o for o in ORIGENS if o.lower() == origem.lower())
 
     data_criacao = datetime.now().isoformat()
@@ -173,7 +159,6 @@ def criar_tarefa():
         "status": "Pendente",
         "origem": origem,
         "data_criacao": data_criacao
-        # data_conclusao: adicionado quando concluída
     }
     tarefas.append(tarefa)
     next_id += 1
@@ -188,20 +173,18 @@ def verificar_urgencia_e_pegar():
     Retorno: None (exibe a tarefa selecionada)
     """
     print("Executando a função verificar_urgencia_e_pegar")
-    # Filtrar apenas tarefas que estão Pendente
     pendentes = [t for t in tarefas if t.get("status") == "Pendente"]
     if not pendentes:
         print("Não há tarefas pendentes.")
         return
 
-    for prio in PRIORIDADES:  # ordem: Urgente, Alta, Média, Baixa
+    for prio in PRIORIDADES: 
         for t in pendentes:
             if t.get("prioridade", "").lower() == prio.lower():
                 t["status"] = "Fazendo"
                 print("Tarefa selecionada para execução:")
                 imprimir_tarefa(t)
                 return
-    # Caso nada encontrado (improvável), pegar a primeira pendente
     t = pendentes[0]
     t["status"] = "Fazendo"
     print("Tarefa selecionada (fallback):")
@@ -272,8 +255,7 @@ def arquivar_tarefas_antigas():
                 continue
             if agora - data_conc > sete_dias:
                 t["status"] = "Arquivado"
-                anexar_arquivo_arquivadas(t.copy())  # registra histórico
-                # Mantemos a tarefa na lista principal com status "Arquivado"
+                anexar_arquivo_arquivadas(t.copy())
                 print(f"Tarefa ID {t['id']} arquivada automaticamente.")
 
 def exclusao_logica():
@@ -313,7 +295,6 @@ def imprimir_tarefa(t: Dict):
     print(f"Data criação: {t.get('data_criacao')}")
     if t.get("data_conclusao"):
         print(f"Data conclusão: {t.get('data_conclusao')}")
-        # calcular tempo de execução
         try:
             inicio = datetime.fromisoformat(t["data_criacao"])
             fim = datetime.fromisoformat(t["data_conclusao"])
@@ -350,10 +331,6 @@ def relatorio_arquivados():
         return
     for t in arquivadas:
         imprimir_tarefa(t)
-
-# =========================
-# Menu principal e loop
-# =========================
 def mostrar_menu():
     """
     Mostra as opções do menu principal.
@@ -378,7 +355,6 @@ def menu_principal():
     print("Executando a função menu_principal")
     inicializar_arquivos()
     while True:
-        # Antes de cada interação, arquivar automaticamente tarefas antigas
         arquivar_tarefas_antigas()
         mostrar_menu()
         opc = input_com_tratamento("Escolha uma opção: ")
@@ -405,7 +381,6 @@ def menu_principal():
         elif opc_num == 8:
             relatorio_arquivados()
         elif opc_num == 9:
-            # Ao sair, salvar dados e encerrar
             salvar_tarefas()
             print("Dados salvos em", ARQUIVO_TAREFAS)
             print("Encerrando o programa.")
@@ -417,7 +392,6 @@ if __name__ == "__main__":
     try:
         menu_principal()
     except KeyboardInterrupt:
-        # salvar antes de sair por Ctrl+C
         salvar_tarefas()
         print("\nPrograma encerrado pelo usuário. Dados salvos.")
         exit()
